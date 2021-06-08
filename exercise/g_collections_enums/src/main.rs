@@ -9,6 +9,16 @@
 // - `Miss`
 //
 // You will need to complete 1b as well before you will be able to run this program successfully.
+enum Shot {
+    Bullseye,
+    Hit(f64),
+    Miss,
+}
+
+use Shot::Bullseye;
+use Shot::Hit;
+use Shot::Miss;
+
 
 impl Shot {
     // Here is a method for the `Shot` enum you just defined.
@@ -18,6 +28,11 @@ impl Shot {
         // - return 2 points if `self` is a `Shot::Hit(x)` where x < 3.0
         // - return 1 point if `self` is a `Shot::Hit(x)` where x >= 3.0
         // - return 0 points if `self` is a Miss
+        match self {
+            Bullseye => 5,
+            Hit(x) => if x < 3.0 {2} else {1},
+            Miss => 0,
+        }
     }
 }
 
@@ -34,12 +49,27 @@ fn main() {
     //      - Less than 1.0 -- `Shot::Bullseye`
     //      - Between 1.0 and 5.0 -- `Shot::Hit(value)`
     //      - Greater than 5.0 -- `Shot::Miss`
+    for arrow in arrow_coords {
+        arrow.print_description();
+
+        let dist = arrow.distance_from_center();
+
+        shots.push(
+            if dist < 1.0 {Bullseye}
+            else if dist > 1.0 && dist < 5.0 {Hit(dist)}
+            else {Miss}
+        );
+    }
 
 
     let mut total = 0;
     // 3. Finally, loop through each shot in shots and add its points to total
+    for shot in shots {
+        total += shot.points();
+    }
 
     println!("Final point total is: {}", total);
+
 }
 
 // A coordinate of where an Arrow hit

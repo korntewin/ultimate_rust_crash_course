@@ -55,9 +55,11 @@ fn main() {
         let dist = arrow.distance_from_center();
 
         shots.push(
-            if dist < 1.0 {Bullseye}
-            else if dist > 1.0 && dist < 5.0 {Hit(dist)}
-            else {Miss}
+            match dist {
+                d if d < 1.0 => Bullseye,
+                d if d > 1.0 && d < 5.0 => Hit(dist),
+                _ => Miss,
+            }
         );
     }
 

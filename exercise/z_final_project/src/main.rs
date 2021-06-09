@@ -38,33 +38,170 @@ fn main() {
         print_usage_and_exit();
     }
     let subcommand = args.remove(0);
-    match subcommand.as_str() {
+    
+    match subcommand {
+        s if [
+            "blur", "brighten", "crop", 
+            "rotate", "invert", "grayscale", "fractal"
+            ].contains(&s.as_str()) => {one_command(&s.as_str(), &mut args)},
+        s => {many_commands(s, &mut args)},
+    }
+}
+
+fn many_commands(infile_temp: String, args: &mut Vec<String>) {
+
+    let mut infile = infile_temp;
+    let outfile = args.remove(0);
+
+    while args.len() != 0 {
+
+        match args.remove(0).as_str() {
+
+            // EXAMPLE FOR CONVERSION OPERATIONS
+            "blur" => {
+                if args.len() < 1 {
+                    print_usage_and_exit();
+                }
+                // **OPTION**
+                // Improve the blur implementation -- see the blur() function below
+                blur(&infile, &outfile, args.remove(0).trim().parse().expect("Not number for the last input"));
+            },
+
+            // **OPTION**
+            // Brighten -- see the brighten() function below
+            "brighten" => {
+                if args.len() < 1 {
+                    print_usage_and_exit();
+                }
+                let val = args.remove(0).trim().parse().expect("Not number for the last input");
+                brighten(&infile, &outfile, val);
+            }
+
+            // **OPTION**
+            // Crop -- see the crop() function below
+            "crop" => {
+                if args.len() < 2 {
+                    print_usage_and_exit();
+                }
+                let x = args.remove(0).trim().parse().expect("Not number for the last input");
+                let y = args.remove(0).trim().parse().expect("Not number for the last input");
+                crop(&infile, &outfile, x, y);
+            }
+
+            // **OPTION**
+            // Rotate -- see the rotate() function below
+            "rotate" => {
+                if args.len() < 1 {
+                    print_usage_and_exit();
+                }
+                let angle = args.remove(0).trim().parse().expect("Not number for the last input");
+                rotate(&infile, &outfile, angle);
+            }
+
+            // **OPTION**
+            // Invert -- see the invert() function below
+            "invert" => {
+                invert(&infile, &outfile);
+            }
+
+            // **OPTION**
+            // Grayscale -- see the grayscale() function below
+            "grayscale" => {
+                grayscale(&infile, &outfile);
+            }
+
+            // A VERY DIFFERENT EXAMPLE...a really fun one. :-)
+            "fractal" => {
+                fractal(&outfile);
+            }
+
+            // **OPTION**
+            // Generate -- see the generate() function below -- this should be sort of like "fractal()"!
+
+            // For everything else...
+            _ => {
+                print_usage_and_exit();
+            },
+        }
+
+        infile = outfile.clone();
+    }
+
+}
+
+fn one_command(subcommand: &str, args: &mut Vec<String>) {
+
+    match subcommand {
         // EXAMPLE FOR CONVERSION OPERATIONS
         "blur" => {
-            if args.len() != 2 {
+            if args.len() != 3 {
                 print_usage_and_exit();
             }
             let infile = args.remove(0);
             let outfile = args.remove(0);
             // **OPTION**
             // Improve the blur implementation -- see the blur() function below
-            blur(infile, outfile);
+            blur(&infile, &outfile, args.remove(0).trim().parse().expect("Not number for the last input"));
         },
 
         // **OPTION**
         // Brighten -- see the brighten() function below
+        "brighten" => {
+            if args.len() != 3 {
+                print_usage_and_exit();
+            }
+            let infile = args.remove(0);
+            let outfile = args.remove(0);
+            let val = args.remove(0).trim().parse().expect("Not number for the last input");
+            brighten(&infile, &outfile, val);
+        }
 
         // **OPTION**
         // Crop -- see the crop() function below
+        "crop" => {
+            if args.len() != 4 {
+                print_usage_and_exit();
+            }
+            let infile = args.remove(0);
+            let outfile = args.remove(0);
+            let x = args.remove(0).trim().parse().expect("Not number for the last input");
+            let y = args.remove(0).trim().parse().expect("Not number for the last input");
+            crop(&infile, &outfile, x, y);
+        }
 
         // **OPTION**
         // Rotate -- see the rotate() function below
+        "rotate" => {
+            if args.len() != 3 {
+                print_usage_and_exit();
+            }
+            let infile = args.remove(0);
+            let outfile = args.remove(0);
+            let angle = args.remove(0).trim().parse().expect("Not number for the last input");
+            rotate(&infile, &outfile, angle);
+        }
 
         // **OPTION**
         // Invert -- see the invert() function below
+        "invert" => {
+            if args.len() != 2 {
+                print_usage_and_exit();
+            }
+            let infile = args.remove(0);
+            let outfile = args.remove(0);
+            invert(&infile, &outfile);
+        }
 
         // **OPTION**
         // Grayscale -- see the grayscale() function below
+        "grayscale" => {
+            if args.len() != 2 {
+                print_usage_and_exit();
+            }
+            let infile = args.remove(0);
+            let outfile = args.remove(0);
+            grayscale(&infile, &outfile);
+        }
 
         // A VERY DIFFERENT EXAMPLE...a really fun one. :-)
         "fractal" => {
@@ -72,7 +209,7 @@ fn main() {
                 print_usage_and_exit();
             }
             let outfile = args.remove(0);
-            fractal(outfile);
+            fractal(&outfile);
         }
 
         // **OPTION**
@@ -94,18 +231,18 @@ fn print_usage_and_exit() {
     std::process::exit(-1);
 }
 
-fn blur(infile: String, outfile: String) {
+fn blur(infile: &String, outfile: &String, blur_value: f32) {
     // Here's how you open an existing image file
     let img = image::open(infile).expect("Failed to open INFILE.");
     // **OPTION**
     // Parse the blur amount (an f32) from the command-line and pass it through
     // to this function, instead of hard-coding it to 2.0.
-    let img2 = img.blur(2.0);
+    let img2 = img.blur(blur_value);
     // Here's how you save an image to a file.
     img2.save(outfile).expect("Failed writing OUTFILE.");
 }
 
-fn brighten(infile: String, outfile: String) {
+fn brighten(infile: &String, outfile: &String, bright_value: i32) {
     // See blur() for an example of how to open / save an image.
 
     // .brighten() takes one argument, an i32.  Positive numbers brighten the
@@ -113,9 +250,15 @@ fn brighten(infile: String, outfile: String) {
 
     // Challenge: parse the brightness amount from the command-line and pass it
     // through to this function.
+
+    let img = image::open(infile).expect("Failed to open INFILE.");
+
+    let img2 = img.brighten(bright_value);
+
+    img2.save(outfile).expect("Failed to writing OUTFILE");
 }
 
-fn crop(infile: String, outfile: String) {
+fn crop(infile: &String, outfile: &String, x: u32, y: u32) {
     // See blur() for an example of how to open an image.
 
     // .crop() takes four arguments: x: u32, y: u32, width: u32, height: u32
@@ -125,9 +268,14 @@ fn crop(infile: String, outfile: String) {
     // through to this function.
 
     // See blur() for an example of how to save the image.
+    let mut img1 = image::open(infile).expect("Failed to open file");
+
+    img1
+        .crop(x, y, 150, 150)
+        .save(outfile).expect("Failed to writing OUTFILE");
 }
 
-fn rotate(infile: String, outfile: String) {
+fn rotate(infile: &String, outfile: &String, rotate_angle: i32) {
     // See blur() for an example of how to open an image.
 
     // There are 3 rotate functions to choose from (all clockwise):
@@ -139,26 +287,43 @@ fn rotate(infile: String, outfile: String) {
     // Challenge: parse the rotation amount from the command-line, pass it
     // through to this function to select which method to call.
 
-    // See blur() for an example of how to save the image.
+    let img1 = image::open(infile).expect("Failed to open file");
+
+    let img2 = match rotate_angle {
+        a if a <= 90 => img1.rotate90(),
+        a if a >= 90 && a <= 180 => img1.rotate180(),
+        _ => img1.rotate270(),
+    };
+
+    img2.save(outfile).expect("Failed to writing OUTFILE");
+
 }
 
 
-fn invert(infile: String, outfile: String) {
+fn invert(infile: &String, outfile: &String) {
     // See blur() for an example of how to open an image.
 
     // .invert() takes no arguments and converts the image in-place, so you
     // will use the same image to save out to a different file.
 
     // See blur() for an example of how to save the image.
+    let mut img1 = image::open(infile).expect("Failed to open file");
+
+    img1.invert();
+    img1.save(outfile).expect("Failed to writing OUTFILE");
 }
 
-fn grayscale(infile: String, outfile: String) {
+fn grayscale(infile: &String, outfile: &String) {
     // See blur() for an example of how to open an image.
 
     // .grayscale() takes no arguments and converts the image in-place, so
     // you will use the same image to save out to a different file.
 
     // See blur() for an example of how to save the image.
+    let img1 = image::open(infile).expect("Failed to open file");
+
+    let img2 = img1.grayscale();
+    img2.save(outfile).expect("Failed to writing OUTFILE");
 }
 
 fn generate(outfile: String) {
@@ -177,7 +342,7 @@ fn generate(outfile: String) {
 }
 
 // This code was adapted from https://github.com/PistonDevelopers/image
-fn fractal(outfile: String) {
+fn fractal(outfile: &String) {
     let width = 800;
     let height = 800;
 

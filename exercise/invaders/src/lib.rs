@@ -4,19 +4,20 @@ use std::sync::mpsc;
 use std::{thread, io};
 use std::thread::JoinHandle;
 use crossterm::event;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use crate::frame::Drawable;
 use std::error::Error;
 
 pub mod frame;
 pub mod player;
 pub mod render;
+pub mod shot;
 
 pub const NUM_ROWS: usize = 20;
 pub const NUM_COLS: usize = 40;
 
 
-pub fn run(mut audio: Audio) -> Result<(JoinHandle<()>), Box<dyn Error>> {
+pub fn run(mut audio: Audio) -> Result<JoinHandle<()>, Box<dyn Error>> {
 
     // render loop in separate thread
     let (tx, rx) = mpsc::channel();
@@ -37,14 +38,22 @@ pub fn run(mut audio: Audio) -> Result<(JoinHandle<()>), Box<dyn Error>> {
     });
 
     let mut my_player = player::Player::new();
+    let mut instant = Instant::now();
 
     // game loop
     'gameloop: loop {
         let mut curr_frame = frame::new_frame();
+        let delta = instant.elapsed();
+        instant = Instant::now();
 
         while event::poll(Duration::default())? {
             if let event::Event::Key(key_event) = event::read()? {
                 match key_event.code {
+                    event::KeyCode::Char(' ') => {
+                        if my_player.shoot() {
+                            audio.play("shoot");
+                        }
+                    },
                     event::KeyCode::Up=> my_player.move_up(),
                     event::KeyCode::Down=> my_player.move_down(),
                     event::KeyCode::Left => my_player.move_left(),
@@ -58,7 +67,9 @@ pub fn run(mut audio: Audio) -> Result<(JoinHandle<()>), Box<dyn Error>> {
             }
         }
 
+        my_player.update(delta);
         my_player.draw(&mut curr_frame);
+
         let _ = tx.send(curr_frame);
         thread::sleep(Duration::from_millis(10));
     }

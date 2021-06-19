@@ -15,6 +15,7 @@ fn main() {
     let mut audio = Audio::new();
     audio.add("explode", "explode.wav");
     audio.add("lose", "lose.wav");
+    audio.add("shoot", "pew.wav");
 
     // run game
     let render_handle = run(audio);

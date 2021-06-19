@@ -8,6 +8,7 @@ use std::time::{Duration, Instant};
 use crate::frame::Drawable;
 use std::error::Error;
 
+pub mod invaders;
 pub mod frame;
 pub mod player;
 pub mod render;
@@ -38,6 +39,7 @@ pub fn run(mut audio: Audio) -> Result<JoinHandle<()>, Box<dyn Error>> {
     });
 
     let mut my_player = player::Player::new();
+    let mut invaders = invaders::Invaders::new();
     let mut instant = Instant::now();
 
     // game loop
@@ -69,6 +71,10 @@ pub fn run(mut audio: Audio) -> Result<JoinHandle<()>, Box<dyn Error>> {
 
         my_player.update(delta);
         my_player.draw(&mut curr_frame);
+        if invaders.update(delta) {
+            audio.play("move");
+        };
+        invaders.draw(&mut curr_frame);
 
         let _ = tx.send(curr_frame);
         thread::sleep(Duration::from_millis(10));

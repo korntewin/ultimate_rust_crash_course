@@ -1,10 +1,14 @@
+use crate::frame;
+use crate::frame::Frame;
+use std::io::Stdout;
+use std::io::Write;
 use std::io;
 use crossterm::QueueableCommand;
 use crossterm::style::{SetBackgroundColor, Color};
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::cursor::MoveTo;
 
-pub fn render(stdout: &mut Stdout, cur_frame: &Frame, new_frame: &frame, force: bool) {
+pub fn render(stdout: &mut Stdout, cur_frame: &Frame, new_frame: &Frame, force: bool) {
 
     if force {
         stdout.queue(SetBackgroundColor(Color::Blue)).unwrap();
@@ -31,6 +35,7 @@ mod tests {
 
     #[test]
     fn test_render() {
-        render(&mut io::stdout(), frame::new_frame(), frame::new_frame(), true)
+        let _frame = frame::new_frame();
+        render(&mut io::stdout(), &_frame, &_frame, true)
     }
 }

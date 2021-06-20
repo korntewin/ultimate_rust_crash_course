@@ -3,14 +3,15 @@ use crate::frame::{Drawable, Frame};
 use rusty_time::timer::Timer;
 use std::time::Duration;
 use Direction::{Right, Left, Down};
+use crate::shot::Shot;
 
 pub struct Invader {
-    x: usize,
-    y: usize,
+    pub x: usize,
+    pub y: usize,
 }
 
 pub struct Invaders {
-    army: Vec<Invader>,
+    pub army: Vec<Invader>,
     timer: Timer,
     direction: Direction,
 }
@@ -22,6 +23,16 @@ enum Direction {
 }
 
 const INVADER_FRONT_RATIO: f32 = 0.45;
+const INVADER_SPEED: u64 = 1000;
+
+impl Invader {
+    pub fn detect_hit(&self, shot: &Shot) -> bool {
+        if self.x == shot.x && self.y == shot.y {
+           return true
+        }
+        return false
+    }
+}
 
 impl Invaders {
     pub fn new() -> Self {
@@ -41,7 +52,7 @@ impl Invaders {
 
         Self {
             army,
-            timer: Timer::from_millis(1500),
+            timer: Timer::from_millis(INVADER_SPEED),
             direction: Direction::Right,
         }
     }
@@ -100,6 +111,37 @@ impl Invaders {
         return false
 
     }
+
+    pub fn all_kill(&self) -> bool {
+
+        if self.army.len() == 0 {
+            return true
+        }
+        return false
+    }
+
+    pub fn invaded(&self) -> bool {
+
+        match self.army.iter().map(|invader| invader.y).max() {
+            y if y == Some(NUM_ROWS - 1) => true,
+            _ => false,
+        }
+
+    }
+
+    pub fn detect_hit(&mut self, shot: &Shot) -> bool {
+        let idx = self.army
+            .iter()
+            .position(|invader| invader.detect_hit(shot));
+
+        if let Some(remove_idx) = idx {
+            self.army.remove(remove_idx);
+            return true
+        }
+
+        return false
+    }
+
 }
 
 

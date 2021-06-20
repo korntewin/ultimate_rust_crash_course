@@ -3,8 +3,8 @@ use std::time::Duration;
 use crate::frame::{Frame, Drawable};
 
 pub struct Shot {
-    x: usize,
-    y: usize,
+    pub x: usize,
+    pub y: usize,
     explode: bool,
     timer: Timer,
 }
@@ -38,6 +38,7 @@ impl Shot {
     pub fn dead(&self) -> bool {
         (self.explode && self.timer.ready) || (self.y == 0)
     }
+
 }
 
 

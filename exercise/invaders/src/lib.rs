@@ -76,6 +76,19 @@ pub fn run(mut audio: Audio) -> Result<JoinHandle<()>, Box<dyn Error>> {
         };
         invaders.draw(&mut curr_frame);
 
+
+        if my_player.hit_something(&mut invaders) {
+            audio.play("explode");
+        }
+
+        if invaders.all_kill() {
+            audio.play("win");
+            break 'gameloop;
+        } else if invaders.invaded() {
+            audio.play("lose");
+            break 'gameloop;
+        }
+
         let _ = tx.send(curr_frame);
         thread::sleep(Duration::from_millis(10));
     }

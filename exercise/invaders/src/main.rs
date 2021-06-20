@@ -17,6 +17,8 @@ fn main() {
     audio.add("lose", "lose.wav");
     audio.add("shoot", "pew.wav");
     audio.add("move", "move.wav");
+    audio.add("win", "win.wav");
+    audio.add("startup", "startup.wav");
 
     // run game
     let render_handle = run(audio);

@@ -1,6 +1,7 @@
 use crate::{NUM_COLS, NUM_ROWS};
 use crate::frame::{Drawable, Frame};
 use crate::shot::Shot;
+use crate::invaders::{Invader, Invaders};
 use std::time::Duration;
 
 pub struct Player {
@@ -57,6 +58,19 @@ impl Player {
         self.shots.retain(|shot| !shot.dead());
     }
 
+    pub fn hit_something(&mut self, invaders: &mut Invaders) -> bool {
+        // loop through the invaders and shots to identify that which invader is hit
+        // remove that invader out of the frame
+        let mut is_hit = false;
+
+        for shot in self.shots.iter_mut() {
+            if invaders.detect_hit(shot) {
+                shot.explode();
+                is_hit = true
+            }
+        }
+        is_hit
+    }
 }
 
 
